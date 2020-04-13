@@ -31,8 +31,8 @@ namespace PrivateCloud
 
 
             // Locally Created Files
+            serviceCollection.AddSingleton<ICertificateUtils, CertificateUtils>();
             serviceCollection.AddSingleton<ISsmUtils, SsmUtils>();
-            serviceCollection.AddSingleton<ICertificateAuthority, CertificateAuthority>();
             serviceCollection.AddSingleton<ICertificateManager, CertificateManager>();
 
             return serviceCollection.BuildServiceProvider();

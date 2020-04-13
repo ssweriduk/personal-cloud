@@ -4,14 +4,21 @@ using System.Threading.Tasks;
 using Amazon.SimpleSystemsManagement;
 using Amazon.SimpleSystemsManagement.Model;
 
+
+public interface ICertificateParameters
+{
+    Task<string> GetCertificateKmsKeyId();
+    Task<string> GetCertificateArn();
+    Task<string> GetCertificateKeyPair();
+    Task SetCertificateArn(string serverCaArn);
+    Task SetCertificateKmsKeyId(string kmsId);
+    Task SetCertificateKeyPair(string keyId, string keyPair);
+}
+
 public interface ISsmUtils
 {
-    Task<string> GetServerCaKmsKeyId();
-    Task<string> GetServerCaArn();
-    Task<string> GetServerCaKeyPair();
-    Task SetServerCaArn(string serverCaArn);
-    Task SetServerCaKmsKeyId(string kmsId);
-    Task SetServerCaKeyPair(string keyId, string keyPair);
+    ICertificateParameters GetServerCertificateParameters();
+    ICertificateParameters GetClientCertificateParameters(string clientName);
 }
 
 namespace PrivateCloud.CertificateManagement
@@ -20,17 +27,21 @@ namespace PrivateCloud.CertificateManagement
     {
         private readonly IAmazonSimpleSystemsManagement _amazonSimpleSystemsManagement;
 
-        private readonly string SSM_VPN_KEY = "Vpn";
-        private readonly string SSM_VPN_SERVER_CA = "ServerCA";
-        private readonly string SSM_VPN_SERVER_CA_CERTIFICATE_ARN_KEY = "CertificateArn";
-        private readonly string SSM_VPN_SERVER_CA_KEY_PAIR_KMS_ID = "KeyPairKMSId";
-        private readonly string SSM_VPN_SERVER_CA_KEY_PAIR = "KeyPair";
-        private readonly string SSM_VPN_CLIENTS_KEY = "Clients";
+        private readonly string ROOT = "/";
+        private readonly string SSM_VPN = "Vpn";
+        private readonly string SSM_VPN_SERVER = "Server";
+        private readonly string SSM_VPN_CERTIFICATE_ARN = "CertificateArn";
+        private readonly string SSM_VPN_KEY_PAIR_KMS_ID = "KeyPairKMSId";
+        private readonly string SSM_VPN_KEY_PAIR = "KeyPair";
+        private readonly string SSM_VPN_CLIENTS = "Clients";
 
-        private string GetServerCaArnPath() => Path.Join("/", SSM_VPN_KEY, SSM_VPN_SERVER_CA, SSM_VPN_SERVER_CA_CERTIFICATE_ARN_KEY);
-        private string GetServerCaKeyPairPath() => Path.Join("/", SSM_VPN_KEY, SSM_VPN_SERVER_CA, SSM_VPN_SERVER_CA_KEY_PAIR);
-        private string GetClientsPath() => Path.Join("/", SSM_VPN_KEY, SSM_VPN_CLIENTS_KEY);
-        private string GetServerCaKmsKeyIdPath() => Path.Join("/", SSM_VPN_KEY, SSM_VPN_SERVER_CA, SSM_VPN_SERVER_CA_KEY_PAIR_KMS_ID);
+        private string GetServerCertificateArnPath() => Path.Join(ROOT, SSM_VPN, SSM_VPN_SERVER, SSM_VPN_CERTIFICATE_ARN);
+        private string GetServerCertificateKeyPairPath() => Path.Join(ROOT, SSM_VPN, SSM_VPN_SERVER, SSM_VPN_KEY_PAIR);
+        private string GetServerCertificateKmsKeyIdPath() => Path.Join(ROOT, SSM_VPN, SSM_VPN_SERVER, SSM_VPN_KEY_PAIR_KMS_ID);
+
+        private string GetClientCertificateArnPath(string clientName) => Path.Join(ROOT, SSM_VPN, SSM_VPN_CLIENTS, clientName, SSM_VPN_CERTIFICATE_ARN);
+        private string GetClientCertificateKeyPairPath(string clientName) => Path.Join(ROOT, SSM_VPN, SSM_VPN_CLIENTS, clientName, SSM_VPN_KEY_PAIR);
+        private string GetClientCertificateKmsKeyIdPath(string clientName) => Path.Join(ROOT, SSM_VPN, SSM_VPN_CLIENTS, clientName, SSM_VPN_KEY_PAIR_KMS_ID);
 
         public SsmUtils(IAmazonSimpleSystemsManagement amazonSimpleSystemsManagement)
         {
@@ -88,42 +99,131 @@ namespace PrivateCloud.CertificateManagement
             catch (ParameterNotFoundException) { return null; }
         }
 
-        public async Task SetServerCaKeyPair(string keyId, string keyPair)
+        #region Client Keys
+        private async Task SetClientCertificateKeyPair(string clientName, string keyId, string keyPair)
         {
-            var name = GetServerCaKeyPairPath();
+            var name = GetClientCertificateKeyPairPath(clientName);
             await SetSecureSsmParameterValue(name, keyId, keyPair);
         }
 
-        public async Task SetServerCaKmsKeyId(string kmsId)
+        private async Task SetClientCertificateKmsKeyId(string clientName, string kmsId)
         {
-            var name = GetServerCaKmsKeyIdPath();
+            var name = GetClientCertificateKmsKeyIdPath(clientName);
             await SetStandardSsmParameterValue(name, kmsId);
         }
-        
 
-        public async Task SetServerCaArn(string serverCaArn)
+        private async Task SetClientCertificateArn(string clientName, string clientCertificateArn)
         {
-            var name = GetServerCaArnPath();
-            await SetStandardSsmParameterValue(name, serverCaArn);
+            var name = GetClientCertificateArnPath(clientName);
+            await SetStandardSsmParameterValue(name, clientCertificateArn);
         }
-        
-        public async Task<string> GetServerCaKeyPair()
+
+        private async Task<string> GetClientCertificateKeyPair(string clientName)
         {
-            var name = GetServerCaKeyPairPath();
+            var name = GetClientCertificateKeyPairPath(clientName);
             return await GetSecureSsmParameterValue(name);
         }
 
-        public async Task<string> GetServerCaKmsKeyId()
+        private async Task<string> GetClientCertificateKmsKeyId(string clientName)
         {
-            var name = GetServerCaKmsKeyIdPath();
+            var name = GetClientCertificateKmsKeyIdPath(clientName);
             return await GetSsmParameterValue(name);
 
         }
 
-        public async Task<string> GetServerCaArn()
+        private async Task<string> GetClientCertificateArn(string clientname)
         {
-            var name = GetServerCaArnPath();
+            var name = GetClientCertificateArnPath(clientname);
             return await GetSsmParameterValue(name);
         }
+        #endregion
+
+        #region Server Keys
+        private async Task SetServerCertificateKeyPair(string keyId, string keyPair)
+        {
+            var name = GetServerCertificateKeyPairPath();
+            await SetSecureSsmParameterValue(name, keyId, keyPair);
+        }
+
+        private async Task SetServerCertificateKmsKeyId(string kmsId)
+        {
+            var name = GetServerCertificateKmsKeyIdPath();
+            await SetStandardSsmParameterValue(name, kmsId);
+        }
+
+        private async Task SetServerCertificateArn(string serverCertificateArn)
+        {
+            var name = GetServerCertificateArnPath();
+            await SetStandardSsmParameterValue(name, serverCertificateArn);
+        }
+
+        private async Task<string> GetServerCertificateKeyPair()
+        {
+            var name = GetServerCertificateKeyPairPath();
+            return await GetSecureSsmParameterValue(name);
+        }
+
+        private async Task<string> GetServerCertificateKmsKeyId()
+        {
+            var name = GetServerCertificateKmsKeyIdPath();
+            return await GetSsmParameterValue(name);
+        }
+
+        private async Task<string> GetServerCertificateArn()
+        {
+            var name = GetServerCertificateArnPath();
+            return await GetSsmParameterValue(name);
+        }
+        #endregion
+
+        private class ServerCertificateParameters : ICertificateParameters
+        {
+            private readonly SsmUtils _ssmUtils;
+
+            public ServerCertificateParameters(SsmUtils ssmUtils)
+            {
+                _ssmUtils = ssmUtils;
+            }
+
+            public async Task<string> GetCertificateArn() => await _ssmUtils.GetServerCertificateArn();
+
+            public async Task<string> GetCertificateKeyPair() => await _ssmUtils.GetServerCertificateKeyPair();
+
+            public async Task<string> GetCertificateKmsKeyId() => await _ssmUtils.GetServerCertificateKmsKeyId();
+
+            public async Task SetCertificateArn(string certificateArn) => await _ssmUtils.SetServerCertificateArn(certificateArn);
+
+            public async Task SetCertificateKeyPair(string keyId, string keyPair) => await _ssmUtils.SetServerCertificateKeyPair(keyId, keyPair);
+
+            public async Task SetCertificateKmsKeyId(string kmsId) => await _ssmUtils.SetServerCertificateKmsKeyId(kmsId);
+        }
+
+        private class ClientCertificateParameters : ICertificateParameters
+        {
+            private readonly SsmUtils _ssmUtils;
+            private readonly string _clientName;
+
+            public ClientCertificateParameters(SsmUtils ssmUtils, string clientName)
+            {
+                _ssmUtils = ssmUtils;
+                _clientName = clientName;
+            }
+
+            public async Task<string> GetCertificateArn() => await _ssmUtils.GetClientCertificateArn(_clientName);
+
+            public async Task<string> GetCertificateKeyPair() => await _ssmUtils.GetClientCertificateKeyPair(_clientName);
+
+            public async Task<string> GetCertificateKmsKeyId() => await _ssmUtils.GetClientCertificateKmsKeyId(_clientName);
+
+            public async Task SetCertificateArn(string certificateArn) => await _ssmUtils.SetClientCertificateArn(_clientName, certificateArn);
+
+            public async Task SetCertificateKeyPair(string keyId, string keyPair) => await _ssmUtils.SetClientCertificateKeyPair(_clientName, keyId, keyPair);
+
+            public async Task SetCertificateKmsKeyId(string kmsId) => await _ssmUtils.SetClientCertificateKmsKeyId(_clientName, kmsId);
+        }
+
+        public ICertificateParameters GetServerCertificateParameters() => new ServerCertificateParameters(this);
+
+        public ICertificateParameters GetClientCertificateParameters(string clientName) => new ClientCertificateParameters(this, clientName);
     }
 }

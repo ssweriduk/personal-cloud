@@ -27,10 +27,16 @@ namespace PrivateCloud.CertificateManagement
         public AsymmetricCipherKeyPair KeyPair { get; set; }
     }
 
-    // Credit: https://github.com/rlipscombe/bouncy-castle-csharp/blob/master/CreateCertificate/Program.cs
-    public static class CertificateUtils
+    public interface ICertificateUtils
     {
-        public static CertificateWithKeyPair IssueCertificate(X509Name subjectName, X509Certificate issuerCertificate, AsymmetricCipherKeyPair issuerKeyPair, string[] subjectAlternativeNames, KeyPurposeID[] usages)
+        CertificateWithKeyPair IssueCertificate(X509Name subjectName, X509Certificate issuerCertificate, AsymmetricCipherKeyPair issuerKeyPair, string[] subjectAlternativeNames, KeyPurposeID[] usages);
+        CertificateWithKeyPair CreateCertificateAuthorityCertificate(X509Name subjectName, string[] subjectAlternativeNames, KeyPurposeID[] usages);
+    }
+
+    // Credit: https://github.com/rlipscombe/bouncy-castle-csharp/blob/master/CreateCertificate/Program.cs
+    public class CertificateUtils : ICertificateUtils
+    {
+        public CertificateWithKeyPair IssueCertificate(X509Name subjectName, X509Certificate issuerCertificate, AsymmetricCipherKeyPair issuerKeyPair, string[] subjectAlternativeNames, KeyPurposeID[] usages)
         {
             // It's self-signed, so these are the same.
             var issuerName = issuerCertificate.IssuerDN;
@@ -54,7 +60,7 @@ namespace PrivateCloud.CertificateManagement
             };
         }
 
-        public static CertificateWithKeyPair CreateCertificateAuthorityCertificate(X509Name subjectName, string[] subjectAlternativeNames, KeyPurposeID[] usages)
+        public CertificateWithKeyPair CreateCertificateAuthorityCertificate(X509Name subjectName, string[] subjectAlternativeNames, KeyPurposeID[] usages)
         {
             // It's self-signed, so these are the same.
             var issuerName = subjectName;
@@ -81,7 +87,7 @@ namespace PrivateCloud.CertificateManagement
             };
         }
 
-        private static SecureRandom GetSecureRandom()
+        private SecureRandom GetSecureRandom()
         {
             // Since we're on Windows, we'll use the CryptoAPI one (on the assumption
             // that it might have access to better sources of entropy than the built-in
@@ -91,7 +97,7 @@ namespace PrivateCloud.CertificateManagement
             return random;
         }
 
-        private static X509Certificate GenerateCertificate(SecureRandom random,
+        private X509Certificate GenerateCertificate(SecureRandom random,
                                                            X509Name subjectName,
                                                            AsymmetricCipherKeyPair subjectKeyPair,
                                                            BigInteger subjectSerialNumber,
@@ -148,7 +154,7 @@ namespace PrivateCloud.CertificateManagement
         /// </summary>
         /// <param name="random"></param>
         /// <returns></returns>
-        private static BigInteger GenerateSerialNumber(SecureRandom random)
+        private BigInteger GenerateSerialNumber(SecureRandom random)
         {
             var serialNumber =
                 BigIntegers.CreateRandomInRange(
@@ -162,7 +168,7 @@ namespace PrivateCloud.CertificateManagement
         /// <param name="random">The random number generator.</param>
         /// <param name="strength">The key length in bits. For RSA, 2048 bits should be considered the minimum acceptable these days.</param>
         /// <returns></returns>
-        private static AsymmetricCipherKeyPair GenerateKeyPair(SecureRandom random, int strength)
+        private AsymmetricCipherKeyPair GenerateKeyPair(SecureRandom random, int strength)
         {
             var keyGenerationParameters = new KeyGenerationParameters(random, strength);
 
@@ -183,7 +189,7 @@ namespace PrivateCloud.CertificateManagement
         /// <param name="issuerDN"></param>
         /// <param name="issuerKeyPair"></param>
         /// <param name="issuerSerialNumber"></param>
-        private static void AddAuthorityKeyIdentifier(X509V3CertificateGenerator certificateGenerator,
+        private void AddAuthorityKeyIdentifier(X509V3CertificateGenerator certificateGenerator,
                                                       X509Name issuerDN,
                                                       AsymmetricCipherKeyPair issuerKeyPair,
                                                       BigInteger issuerSerialNumber)
@@ -203,7 +209,7 @@ namespace PrivateCloud.CertificateManagement
         /// </summary>
         /// <param name="certificateGenerator"></param>
         /// <param name="subjectAlternativeNames"></param>
-        private static void AddSubjectAlternativeNames(X509V3CertificateGenerator certificateGenerator,
+        private void AddSubjectAlternativeNames(X509V3CertificateGenerator certificateGenerator,
                                                        IEnumerable<string> subjectAlternativeNames)
         {
             var subjectAlternativeNamesExtension =
@@ -220,7 +226,7 @@ namespace PrivateCloud.CertificateManagement
         /// </summary>
         /// <param name="certificateGenerator"></param>
         /// <param name="usages"></param>
-        private static void AddExtendedKeyUsage(X509V3CertificateGenerator certificateGenerator, KeyPurposeID[] usages)
+        private void AddExtendedKeyUsage(X509V3CertificateGenerator certificateGenerator, KeyPurposeID[] usages)
         {
             certificateGenerator.AddExtension(
                 X509Extensions.ExtendedKeyUsage.Id, false, new ExtendedKeyUsage(usages));
@@ -231,7 +237,7 @@ namespace PrivateCloud.CertificateManagement
         /// </summary>
         /// <param name="certificateGenerator"></param>
         /// <param name="isCertificateAuthority"></param>
-        private static void AddBasicConstraints(X509V3CertificateGenerator certificateGenerator,
+        private void AddBasicConstraints(X509V3CertificateGenerator certificateGenerator,
                                                 bool isCertificateAuthority)
         {
             certificateGenerator.AddExtension(
@@ -243,7 +249,7 @@ namespace PrivateCloud.CertificateManagement
         /// </summary>
         /// <param name="certificateGenerator"></param>
         /// <param name="subjectKeyPair"></param>
-        private static void AddSubjectKeyIdentifier(X509V3CertificateGenerator certificateGenerator,
+        private void AddSubjectKeyIdentifier(X509V3CertificateGenerator certificateGenerator,
                                                     AsymmetricCipherKeyPair subjectKeyPair)
         {
             var subjectKeyIdentifierExtension =
