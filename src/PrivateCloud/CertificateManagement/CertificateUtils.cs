@@ -29,13 +29,72 @@ namespace PrivateCloud.CertificateManagement
 
     public interface ICertificateUtils
     {
-        CertificateWithKeyPair IssueCertificate(X509Name subjectName, X509Certificate issuerCertificate, AsymmetricCipherKeyPair issuerKeyPair, string[] subjectAlternativeNames, KeyPurposeID[] usages);
-        CertificateWithKeyPair CreateCertificateAuthorityCertificate(X509Name subjectName, string[] subjectAlternativeNames, KeyPurposeID[] usages);
+        CertificateWithKeyPair IssueClientCertificate(string clientUsername, CertificateWithKeyPair issuerCertificateWithKeyPair);
+        CertificateWithKeyPair IssueRootCertificate();
+
     }
 
     // Credit: https://github.com/rlipscombe/bouncy-castle-csharp/blob/master/CreateCertificate/Program.cs
     public class CertificateUtils : ICertificateUtils
     {
+        public CertificateWithKeyPair IssueClientCertificate(string clientUsername, CertificateWithKeyPair issuerCertificateWithKeyPair)
+        {
+            var subjectName = new X509Name($"C=US, ST=New York, L=New York, O=Sweriduk Inc., CN=Client Certificate of {clientUsername}");
+            var subjectAlternativeNames = new string[] { "vpn.sweriduk.com" };
+            var usages = new KeyPurposeID[] { KeyPurposeID.IdKPClientAuth };
+
+            // It's self-signed, so these are the same.
+            var issuerName = issuerCertificateWithKeyPair.Certificate.IssuerDN;
+            var random = GetSecureRandom();
+            var subjectKeyPair = GenerateKeyPair(random, 2048);
+
+
+            var serialNumber = GenerateSerialNumber(random);
+            var issuerSerialNumber = issuerCertificateWithKeyPair.Certificate.SerialNumber;
+
+            const bool isCertificateAuthority = false;
+            var certificate = GenerateCertificate(random, subjectName, subjectKeyPair, serialNumber,
+                                                  subjectAlternativeNames, issuerName, issuerCertificateWithKeyPair.KeyPair,
+                                                  issuerSerialNumber, isCertificateAuthority,
+                                                  usages);
+
+            return new CertificateWithKeyPair
+            {
+                Certificate = certificate,
+                KeyPair = subjectKeyPair,
+            };
+        }
+
+        public CertificateWithKeyPair IssueRootCertificate()
+        {
+            var subjectName = new X509Name($"C=US, ST=New York, L=New York, O=Sweriduk Inc., CN=Sweriduk VPN Root Certificate");
+            var subjectAlternativeNames = new string[] { "vpn.sweriduk.com" };
+            var usages = new KeyPurposeID[] { KeyPurposeID.IdKPServerAuth };
+
+            var issuerName = subjectName;
+
+            var random = GetSecureRandom();
+            var subjectKeyPair = GenerateKeyPair(random, 2048);
+
+            // It's self-signed, so these are the same.
+            var issuerKeyPair = subjectKeyPair;
+
+            var serialNumber = GenerateSerialNumber(random);
+            var issuerSerialNumber = serialNumber; // Self-signed, so it's the same serial number.
+
+            const bool isCertificateAuthority = true;
+            var certificate = GenerateCertificate(random, subjectName, subjectKeyPair, serialNumber,
+                                                  subjectAlternativeNames, issuerName, issuerKeyPair,
+                                                  issuerSerialNumber, isCertificateAuthority,
+                                                  usages);
+
+            return new CertificateWithKeyPair
+            {
+                Certificate = certificate,
+                KeyPair = subjectKeyPair
+            };
+        }
+
         public CertificateWithKeyPair IssueCertificate(X509Name subjectName, X509Certificate issuerCertificate, AsymmetricCipherKeyPair issuerKeyPair, string[] subjectAlternativeNames, KeyPurposeID[] usages)
         {
             // It's self-signed, so these are the same.
@@ -114,7 +173,7 @@ namespace PrivateCloud.CertificateManagement
 
             // Set the signature algorithm. This is used to generate the thumbprint which is then signed
             // with the issuer's private key. We'll use SHA-256, which is (currently) considered fairly strong.
-            var signatureFactory = new Asn1SignatureFactory("SHA512WITHRSA", issuerKeyPair.Private, random);
+            var signatureFactory = new Asn1SignatureFactory("SHA256WITHRSA", issuerKeyPair.Private, random);
 
 
             certificateGenerator.SetIssuerDN(issuerName);
@@ -141,6 +200,17 @@ namespace PrivateCloud.CertificateManagement
 
             if (subjectAlternativeNames != null && subjectAlternativeNames.Any())
                 AddSubjectAlternativeNames(certificateGenerator, subjectAlternativeNames);
+
+            if(isCertificateAuthority)
+            {
+                certificateGenerator.AddExtension(X509Extensions.KeyUsage, true,
+                    new KeyUsage(KeyUsage.NonRepudiation | KeyUsage.CrlSign | KeyUsage.DigitalSignature | KeyUsage.KeyCertSign | KeyUsage.KeyAgreement | KeyUsage.KeyEncipherment));
+            }
+            else
+            {
+                certificateGenerator.AddExtension(X509Extensions.KeyUsage, true, new KeyUsage(KeyUsage.DigitalSignature |
+                        KeyUsage.NonRepudiation | KeyUsage.KeyEncipherment));
+            }
 
             // The certificate is signed with the issuer's private key.
             var certificate = certificateGenerator.Generate(signatureFactory);

@@ -19,6 +19,8 @@ public interface ISsmUtils
 {
     ICertificateParameters GetServerCertificateParameters();
     ICertificateParameters GetClientCertificateParameters(string clientName);
+
+    Task<string> GetVPNServerEndpointID();
 }
 
 namespace PrivateCloud.CertificateManagement
@@ -34,6 +36,9 @@ namespace PrivateCloud.CertificateManagement
         private readonly string SSM_VPN_KEY_PAIR_KMS_ID = "KeyPairKMSId";
         private readonly string SSM_VPN_KEY_PAIR = "KeyPair";
         private readonly string SSM_VPN_CLIENTS = "Clients";
+        private readonly string SSM_VPN_SERVER_ENDPOINT_ID = "EndpointId";
+
+        private string GetServerEndpointIdPath() => Path.Join(ROOT, SSM_VPN, SSM_VPN_SERVER, SSM_VPN_SERVER_ENDPOINT_ID);
 
         private string GetServerCertificateArnPath() => Path.Join(ROOT, SSM_VPN, SSM_VPN_SERVER, SSM_VPN_CERTIFICATE_ARN);
         private string GetServerCertificateKeyPairPath() => Path.Join(ROOT, SSM_VPN, SSM_VPN_SERVER, SSM_VPN_KEY_PAIR);
@@ -225,5 +230,7 @@ namespace PrivateCloud.CertificateManagement
         public ICertificateParameters GetServerCertificateParameters() => new ServerCertificateParameters(this);
 
         public ICertificateParameters GetClientCertificateParameters(string clientName) => new ClientCertificateParameters(this, clientName);
+
+        public async Task<string> GetVPNServerEndpointID() => await GetSsmParameterValue(GetServerEndpointIdPath());
     }
 }

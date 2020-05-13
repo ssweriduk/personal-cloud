@@ -8,6 +8,8 @@ using Amazon.Extensions.NETCore.Setup;
 using System.Threading.Tasks;
 using Amazon.KeyManagementService;
 using PrivateCloud.CertificateManagement;
+using PrivateCloud.UserManagement;
+using Amazon.EC2;
 
 namespace PrivateCloud
 {
@@ -27,6 +29,7 @@ namespace PrivateCloud
             serviceCollection.AddAWSService<IAmazonSimpleSystemsManagement>(awsOptions);
             serviceCollection.AddAWSService<IAmazonCertificateManager>(awsOptions);
             serviceCollection.AddAWSService<IAmazonKeyManagementService>(awsOptions);
+            serviceCollection.AddAWSService<IAmazonEC2>(awsOptions);
             serviceCollection.AddSingleton<IClock>(SystemClock.Instance);
 
 
@@ -34,6 +37,8 @@ namespace PrivateCloud
             serviceCollection.AddSingleton<ICertificateUtils, CertificateUtils>();
             serviceCollection.AddSingleton<ISsmUtils, SsmUtils>();
             serviceCollection.AddSingleton<ICertificateManager, CertificateManager>();
+            serviceCollection.AddSingleton<IUserManager, UserManager>();
+            serviceCollection.AddSingleton<IBlacklistedUserManager, BlacklistedUserManager>();
 
             return serviceCollection.BuildServiceProvider();
         }
