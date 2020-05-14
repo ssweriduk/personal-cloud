@@ -4,24 +4,26 @@ using Amazon.CDK;
 using Amazon.CDK.AWS.EC2;
 using Amazon.CDK.AWS.SSM;
 
-namespace PrivateCloud.Vpn
+namespace PrivateCloud.CDK.Constructs.Vpn
 {
 
-    public class VpcStackProps : StackProps
+    public class VpcStackProps
     {
         public string PrivateSubnetIdsSSMKey { get; set; }
     }
 
-    public class VpcStack : Stack
+    public class VpcStack : Construct
     {
-        public VpcStack(Construct scope, string id, VpcStackProps props) : base(scope, id, props)
+        public Vpc MainVpc { get; }
+
+        public VpcStack(Construct scope, string id, VpcStackProps props) : base(scope, id)
         {
             var natGatewayProvider = NatProvider.Instance(new NatInstanceProps
             {
                 InstanceType = InstanceType.Of(InstanceClass.BURSTABLE3, InstanceSize.NANO) // "t3.nano"
             });
 
-            var vpc = new Vpc(this, "MainVpc", new VpcProps
+            MainVpc = new Vpc(this, "MainVpc", new VpcProps
             {
                 NatGatewayProvider = natGatewayProvider,
                 NatGateways = 1,
@@ -41,14 +43,14 @@ namespace PrivateCloud.Vpn
                         CidrMask = 17,
                         SubnetType = SubnetType.PRIVATE
                     }
-                }                
+                }
             });
 
             new StringParameter(this, "VPC Private Subnets", new StringParameterProps
             {
                 ParameterName = props.PrivateSubnetIdsSSMKey,
                 Type = ParameterType.STRING_LIST,
-                StringValue = string.Join(',', vpc.PrivateSubnets.Select(s => s.SubnetId))
+                StringValue = string.Join(',', MainVpc.PrivateSubnets.Select(s => s.SubnetId))
             });
             
 

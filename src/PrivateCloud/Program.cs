@@ -11,10 +11,10 @@ using Amazon.Extensions.NETCore.Setup;
 using PrivateCloud.CertificateManagement;
 using Org.BouncyCastle.Asn1.X509;
 using PrivateCloud.UserManagement;
-using PrivateCloud.Vpn;
-using CDKEnvironment = Amazon.CDK.Environment;
-using Environment = System.Environment;
+
 using System.IO;
+using CDKEnvironment = Amazon.CDK.Environment;
+using PrivateCloud.CDK.Stacks;
 
 namespace PrivateCloud
 {
@@ -61,28 +61,22 @@ namespace PrivateCloud
 
 
 
-                //var serverSsmUtils = ssmUtils.GetServerCertificateParameters();
-                //var serverCertificateArn = await serverSsmUtils.GetCertificateArn();
-                //var app = new App();
-                //var vpnStackProps = new VpnStackProps
-                //{
-                //    ServerCertificateArn = serverCertificateArn,
-                //    ClientCidrBlock = "172.17.0.0/22",
-                //    EndpointIdSSMKey = "/Vpn/Server/EndpointId"
-                //};
-                //_ = new VpnStack(app, "VpnStack", vpnStackProps);
-                //_ = new VpcStack(app, "VpcStack", new VpcStackProps
-                //{
-                //    Env = new CDKEnvironment
-                //    {
-                //        // Apparently this is bad for prod environments.
-                //        // These should eventually be set by tc
-                //        Region = Environment.GetEnvironmentVariable("CDK_DEFAULT_REGION"),
-                //        Account = Environment.GetEnvironmentVariable("CDK_DEFAULT_ACCOUNT")
-                //    },
-                //    PrivateSubnetIdsSSMKey = "/Vpc/MainVpc/Subnets/Private"
-                //});
-                //app.Synth();
+                var serverSsmUtils = ssmUtils.GetServerCertificateParameters();
+                var serverCertificateArn = await serverSsmUtils.GetCertificateArn();
+                var app = new App();
+                new PrivateCloudStack(app, "PrivateCloudStack", new PrivateCloudStackProps
+                {
+                    ServerCertificateArn = serverCertificateArn,
+                    Env = new CDKEnvironment
+                    {
+                        // Apparently this is bad for prod environments.
+                        // These should eventually be set by tc
+                        Region = System.Environment.GetEnvironmentVariable("CDK_DEFAULT_REGION"),
+                        Account = System.Environment.GetEnvironmentVariable("CDK_DEFAULT_ACCOUNT")
+                    },
+                });
+                
+                app.Synth();
 
 
 
@@ -92,11 +86,11 @@ namespace PrivateCloud
 
 
 
-                var config = await userManager.GetVpnConfigForUser("steve");
-                using (StreamWriter writer = new StreamWriter("./steve.ovpn"))
-                {
-                    writer.Write(config);
-                }
+                //var config = await userManager.GetVpnConfigForUser("steve");
+                //using (StreamWriter writer = new StreamWriter("./steve.ovpn"))
+                //{
+                //    writer.Write(config);
+                //}
             }
         }
     }

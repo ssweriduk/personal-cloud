@@ -5,16 +5,16 @@ using Amazon.CDK.AWS.Logs;
 using Amazon.CDK.AWS.SSM;
 using static Amazon.CDK.AWS.EC2.CfnClientVpnEndpoint;
 
-namespace PrivateCloud.Vpn
+namespace PrivateCloud.CDK.Constructs.Vpn
 {
-    public class VpnStackProps : IStackProps
+    public class VpnStackProps
     {
         public string ServerCertificateArn { get; set; }
         public string ClientCidrBlock { get; set; }
         public string EndpointIdSSMKey { get; set; }
     }
 
-    public class VpnStack : Stack
+    public class VpnStack : Construct
     {
         public VpnStack(Construct scope, string id, VpnStackProps props) : base(scope, id)
         {
@@ -58,7 +58,13 @@ namespace PrivateCloud.Vpn
                     Enabled = true,
                     CloudwatchLogGroup = vpnLogGroup.LogGroupName,  // This seems to be incorrect
                     CloudwatchLogStream = vpnLogStream.LogStreamName,
-                }
+                },
+            });
+            new CfnClientVpnAuthorizationRule(this, "VpnAuthorizations", new CfnClientVpnAuthorizationRuleProps
+            {
+                TargetNetworkCidr = "0.0.0.0/0",
+                AuthorizeAllGroups = true,
+                ClientVpnEndpointId = endpoint.Ref
             });
 
             new StringParameter(this, "Vpn EndpointID SSM Key", new StringParameterProps
