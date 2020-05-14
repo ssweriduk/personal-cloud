@@ -39,6 +39,7 @@ namespace PrivateCloud.CDK.Stacks
                 Tag = "version_2020-05-13-224127",
                 RouterRepository = repositoriesStack.NginxRouterRepository,
                 FargateCluster = fargateCluster.Cluster,
+                MainVpc = vpcStack.MainVpc
             });
         }
     }
