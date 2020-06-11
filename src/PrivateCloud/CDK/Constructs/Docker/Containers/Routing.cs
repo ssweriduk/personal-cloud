@@ -16,7 +16,6 @@ namespace PrivateCloud.CDK.Constructs.Docker.Containers
     public class Routing : Construct
     {
         public LogGroup LogGroup { get; set; }
-        public ContainerDefinition Container { get; set; }
         public TaskDefinition Task { get; set; }
 
         public Routing(Construct scope, string id, RoutingProps props) : base(scope, id)
@@ -33,7 +32,7 @@ namespace PrivateCloud.CDK.Constructs.Docker.Containers
                 Retention = RetentionDays.ONE_WEEK,
             });
 
-            Container = Task.AddContainer("router", new ContainerDefinitionOptions
+            var container = Task.AddContainer("router", new ContainerDefinitionOptions
             {
                 Image = ContainerImage.FromEcrRepository(props.Repository, props.Tag),
                 Logging = LogDriver.AwsLogs(new AwsLogDriverProps
@@ -45,7 +44,7 @@ namespace PrivateCloud.CDK.Constructs.Docker.Containers
                 MemoryLimitMiB = 64,
                 Cpu = 128,
             });
-            Container.AddPortMappings(new PortMapping
+            container.AddPortMappings(new PortMapping
             {
                 ContainerPort = 443,
                 HostPort = 443,

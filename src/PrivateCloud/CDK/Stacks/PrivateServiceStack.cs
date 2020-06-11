@@ -20,6 +20,7 @@ namespace PrivateCloud.CDK.Stacks
     {
         public PrivateServiceStack(Construct scope, string id, PrivateServiceStackProps props) : base(scope, id, props)
         {
+            // Spin up the directory here for the router to point to
             _ = new PrivateRouting(this, "PrivateRouting", new PrivateRoutingStackProps
             {
                 Tag = props.NginxRouterRepositoryTag,
