@@ -1,0 +1,7 @@
+version: "3.8"
+services:
+  router:
+    build: .
+    ports:
+      - "80:80"
+      - "443:443"

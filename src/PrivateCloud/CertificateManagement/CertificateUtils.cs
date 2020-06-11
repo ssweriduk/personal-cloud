@@ -20,7 +20,6 @@ using X509Certificate = Org.BouncyCastle.X509.X509Certificate;
 
 namespace PrivateCloud.CertificateManagement
 {
-
     public class CertificateWithKeyPair
     {
         public X509Certificate Certificate { get; set; }

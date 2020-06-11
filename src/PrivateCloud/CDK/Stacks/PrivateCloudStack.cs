@@ -11,6 +11,7 @@ namespace PrivateCloud.CDK.Stacks
     public class PrivateCloudStackProps : StackProps
     {
         public string ServerCertificateArn { get; set; }
+        public string NginxRouterTag { get; set; }
     }
 
     public class PrivateCloudStack : Stack
@@ -28,18 +29,13 @@ namespace PrivateCloud.CDK.Stacks
             {
                 PrivateSubnetIdsSSMKey = "/Vpc/MainVpc/Subnets/Private"
             });
-            var repositoriesStack = new RepositoriesStack(this, "RepositoriesStack");
 
-            var fargateCluster = new FargateCluster(this, "FargateCluster", new FargateClusterProps
+
+            new PrivateECSStack(this, "PrivateECSStack", new PrivateECSStackProps
             {
                 MainVpc = vpcStack.MainVpc,
-            });
-            _ = new PrivateRouting(this, "PrivateRouting", new PrivateRoutingStackProps
-            {
-                Tag = "version_2020-05-13-224127",
-                RouterRepository = repositoriesStack.NginxRouterRepository,
-                FargateCluster = fargateCluster.Cluster,
-                MainVpc = vpcStack.MainVpc
+                NginxRouterRepositoryName = StackInfo.NginxRouterRepositoryName,
+                NginxRouterTag = props.NginxRouterTag
             });
         }
     }
