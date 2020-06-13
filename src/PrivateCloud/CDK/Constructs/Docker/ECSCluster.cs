@@ -31,7 +31,11 @@ namespace PrivateCloud.CDK.Constructs.Docker
                 MachineImage = EcsOptimizedImage.AmazonLinux2(AmiHardwareType.STANDARD),
                 DesiredCapacity = 1,
                 MaxCapacity = 2,
+                KeyName = "PrivateEcsCluster",
             });
+            asg.Connections.AllowFromAnyIpv4(Port.Tcp(80));
+            asg.Connections.AllowFromAnyIpv4(Port.Tcp(443));
+            asg.Connections.AllowFromAnyIpv4(Port.Tcp(22));
 
             var efs = new FileSystem(this, "Shared ECS File System", new FileSystemProps
             {
