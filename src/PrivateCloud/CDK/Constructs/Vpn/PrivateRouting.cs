@@ -15,7 +15,6 @@ namespace PrivateCloud.CDK.Constructs.Vpn
         public IRepository RouterRepository { get; set; }
         public string Tag { get; set; }
         public Cluster Cluster { get; set; }
-        public Vpc MainVpc { get; set; }
     }
 
     public class PrivateRouting : Construct
@@ -28,23 +27,12 @@ namespace PrivateCloud.CDK.Constructs.Vpn
                 Repository = props.RouterRepository,
             });
 
-            var privateRoutingSecurityGroup = new SecurityGroup(this, "Private Cloud Security Group", new SecurityGroupProps
-            {
-                Vpc = props.MainVpc,
-                Description = "Security group for Private Cloud",
-                AllowAllOutbound = true,
-                SecurityGroupName = "Private Cloud SG",
-            });
-            privateRoutingSecurityGroup.Connections.AllowFromAnyIpv4(Port.Tcp(80));
-            privateRoutingSecurityGroup.Connections.AllowFromAnyIpv4(Port.Tcp(443));
-
             new Ec2Service(this, "Private Cloud Service", new Ec2ServiceProps
             {
                 Cluster = props.Cluster,
                 AssignPublicIp = false,
                 DesiredCount = 1,
                 TaskDefinition = routing.Task,
-                SecurityGroups = new ISecurityGroup[] { privateRoutingSecurityGroup },
                 MinHealthyPercent = 0,
             });
         }

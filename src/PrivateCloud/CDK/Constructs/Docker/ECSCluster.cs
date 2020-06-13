@@ -27,7 +27,7 @@ namespace PrivateCloud.CDK.Constructs.Docker
 
             var asg = Cluster.AddCapacity("EC2 Instances", new AddCapacityOptions
             {
-                InstanceType = InstanceType.Of(InstanceClass.BURSTABLE3, InstanceSize.MICRO),
+                InstanceType = InstanceType.Of(InstanceClass.BURSTABLE3, InstanceSize.MEDIUM),
                 MachineImage = EcsOptimizedImage.AmazonLinux2(AmiHardwareType.STANDARD),
                 DesiredCapacity = 1,
                 MaxCapacity = 2,
@@ -35,6 +35,7 @@ namespace PrivateCloud.CDK.Constructs.Docker
             });
             asg.Connections.AllowFromAnyIpv4(Port.Tcp(80));
             asg.Connections.AllowFromAnyIpv4(Port.Tcp(443));
+            asg.Connections.AllowFromAnyIpv4(Port.Tcp(8111));
             asg.Connections.AllowFromAnyIpv4(Port.Tcp(22));
 
             var efs = new FileSystem(this, "Shared ECS File System", new FileSystemProps
@@ -55,7 +56,8 @@ namespace PrivateCloud.CDK.Constructs.Docker
                 "sudo yum install -y amazon-efs-utils",
                 "sudo yum install -y nfs-utils",
                 "sudo mkdir /mnt/efs",
-                $"sudo mount -t efs {efs.FileSystemId}:/ /mnt/efs"
+                $"sudo mount -t efs {efs.FileSystemId}:/ /mnt/efs",
+                "sudo chmod go+rw /mnt/efs"
             );
         }
     }

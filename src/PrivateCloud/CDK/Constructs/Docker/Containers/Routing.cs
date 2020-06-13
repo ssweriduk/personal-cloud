@@ -15,14 +15,13 @@ namespace PrivateCloud.CDK.Constructs.Docker.Containers
 
     public class Routing : Construct
     {
-        public LogGroup LogGroup { get; set; }
         public TaskDefinition Task { get; set; }
 
         public Routing(Construct scope, string id, RoutingProps props) : base(scope, id)
         {
             Task = new Ec2TaskDefinition(this, "Private Routing Task", new Ec2TaskDefinitionProps
             {
-                NetworkMode = NetworkMode.AWS_VPC,
+                NetworkMode = NetworkMode.BRIDGE,
             });
 
             var logGroup = new LogGroup(this, "Private NGINX Router Log Group", new LogGroupProps
