@@ -21,7 +21,7 @@ namespace PrivateCloud.CDK.Constructs.Docker.Containers
         {
             Task = new Ec2TaskDefinition(this, "Private Routing Task", new Ec2TaskDefinitionProps
             {
-                NetworkMode = NetworkMode.BRIDGE,
+                NetworkMode = NetworkMode.AWS_VPC,
             });
 
             var logGroup = new LogGroup(this, "Private NGINX Router Log Group", new LogGroupProps
