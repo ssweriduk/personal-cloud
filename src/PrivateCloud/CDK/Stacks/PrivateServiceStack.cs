@@ -4,6 +4,7 @@ using Amazon.CDK.AWS.CloudFormation;
 using Amazon.CDK.AWS.EC2;
 using Amazon.CDK.AWS.ECR;
 using Amazon.CDK.AWS.ECS;
+using Amazon.CDK.AWS.ServiceDiscovery;
 using PrivateCloud.CDK.Constructs.Vpn;
 
 namespace PrivateCloud.CDK.Stacks
@@ -20,10 +21,22 @@ namespace PrivateCloud.CDK.Stacks
     {
         public PrivateServiceStack(Construct scope, string id, PrivateServiceStackProps props) : base(scope, id, props)
         {
+            var privateDnsNamespace = new PrivateDnsNamespace(this, "Private ECS DNS", new PrivateDnsNamespaceProps
+            {
+                Vpc = props.MainVpc,
+                Name = "sweriduk.com",
+            });
 
-            _ = new TeamCityService(this, "TeamCityService", new TeamCityServiceProps
+            var teamCity = new TeamCityService(this, "TeamCityService", new TeamCityServiceProps
             {
                 Cluster = props.Cluster,
+                PrivateDnsNamespace = privateDnsNamespace
+            });
+
+            _ = new TeamCityAgentsService(this, "TeamCityAgents", new TeamCityAgentsServiceProps
+            {
+                Cluster = props.Cluster,
+                ServerUrl = $"http://{teamCity.Service.CloudMapService.ServiceName}.{privateDnsNamespace.NamespaceName}:8111"
             });
 
             _ = new PrivateRouting(this, "PrivateRouting", new PrivateRoutingStackProps
@@ -31,6 +44,7 @@ namespace PrivateCloud.CDK.Stacks
                 Tag = props.NginxRouterRepositoryTag,
                 RouterRepository = props.NginxRouterRepository,
                 Cluster = props.Cluster,
+                PrivateDnsNamespace = privateDnsNamespace
             });
         }
     }

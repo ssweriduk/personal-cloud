@@ -59,6 +59,7 @@ namespace PrivateCloud.CDK.Constructs.Vpn
                     CloudwatchLogGroup = vpnLogGroup.LogGroupName,  // This seems to be incorrect
                     CloudwatchLogStream = vpnLogStream.LogStreamName,
                 },
+                DnsServers = new string[] { "10.0.0.2" } 
             });
             new CfnClientVpnAuthorizationRule(this, "VpnAuthorizations", new CfnClientVpnAuthorizationRuleProps
             {

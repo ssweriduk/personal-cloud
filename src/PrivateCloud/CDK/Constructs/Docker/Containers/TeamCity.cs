@@ -4,6 +4,7 @@ using Amazon.CDK.AWS.EC2;
 using Amazon.CDK.AWS.ECS;
 using Amazon.CDK.AWS.Logs;
 using Amazon.CDK.AWS.EFS;
+using System.Collections.Generic;
 
 namespace PrivateCloud.CDK.Constructs.Docker.Containers
 {
@@ -17,7 +18,7 @@ namespace PrivateCloud.CDK.Constructs.Docker.Containers
         {
             Task = new Ec2TaskDefinition(this, "Private Routing Task", new Ec2TaskDefinitionProps
             {
-                NetworkMode = NetworkMode.BRIDGE,
+                NetworkMode = NetworkMode.AWS_VPC,
             });
 
             var logGroup = new LogGroup(this, "Private TeamCity Log Group", new LogGroupProps
@@ -36,7 +37,7 @@ namespace PrivateCloud.CDK.Constructs.Docker.Containers
                     StreamPrefix = "teamcitycontainer"
                 }),
                 Essential = true,
-                MemoryLimitMiB = 3700,
+                MemoryLimitMiB = 2048,
                 Cpu = 1024,
             });
             container.AddPortMappings(new PortMapping

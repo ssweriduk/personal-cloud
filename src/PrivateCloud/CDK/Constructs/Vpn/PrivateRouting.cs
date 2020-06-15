@@ -6,6 +6,7 @@ using Amazon.CDK.AWS.ECR;
 using Amazon.CDK.AWS.ECS;
 using Amazon.CDK.AWS.EFS;
 using Amazon.CDK.AWS.Logs;
+using Amazon.CDK.AWS.ServiceDiscovery;
 using PrivateCloud.CDK.Constructs.Docker.Containers;
 
 namespace PrivateCloud.CDK.Constructs.Vpn
@@ -15,6 +16,7 @@ namespace PrivateCloud.CDK.Constructs.Vpn
         public IRepository RouterRepository { get; set; }
         public string Tag { get; set; }
         public Cluster Cluster { get; set; }
+        public INamespace PrivateDnsNamespace { get; set; }
     }
 
     public class PrivateRouting : Construct
@@ -27,14 +29,25 @@ namespace PrivateCloud.CDK.Constructs.Vpn
                 Repository = props.RouterRepository,
             });
 
-            new Ec2Service(this, "Private Cloud Service", new Ec2ServiceProps
+            var routerService = new Ec2Service(this, "Private Cloud Service", new Ec2ServiceProps
             {
                 Cluster = props.Cluster,
                 AssignPublicIp = false,
                 DesiredCount = 1,
                 TaskDefinition = routing.Task,
                 MinHealthyPercent = 0,
+                ServiceName = "router",
+                CloudMapOptions = new CloudMapOptions
+                {
+                    CloudMapNamespace = props.PrivateDnsNamespace,
+                    DnsRecordType = DnsRecordType.A,
+                    Name = "vpn",
+                    DnsTtl = Duration.Seconds(30)
+                },
             });
+
+            routerService.Connections.AllowFromAnyIpv4(Port.Tcp(80));
+            routerService.Connections.AllowFromAnyIpv4(Port.Tcp(443));
         }
     }
 }
