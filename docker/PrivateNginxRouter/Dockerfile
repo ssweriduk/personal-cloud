@@ -8,5 +8,8 @@ RUN openssl req -x509 -nodes -days 365 \
 -keyout /etc/ssl/private/nginx-selfsigned.key \
 -out /etc/ssl/certs/nginx-selfsigned.crt;
 
+RUN apk del openssl
+
 COPY default.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/nginx.conf
 COPY helloworld.html /usr/share/nginx/html/index.html

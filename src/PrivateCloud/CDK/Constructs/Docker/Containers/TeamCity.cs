@@ -30,7 +30,7 @@ namespace PrivateCloud.CDK.Constructs.Docker.Containers
 
             var container = Task.AddContainer("teamcity", new ContainerDefinitionOptions
             {
-                Image = ContainerImage.FromRegistry("jetbrains/teamcity-server:latest"),
+                Image = ContainerImage.FromRegistry("jetbrains/teamcity-server:2020.1.1-linux"),
                 Logging = LogDriver.AwsLogs(new AwsLogDriverProps
                 {
                     LogGroup = logGroup,
@@ -39,6 +39,10 @@ namespace PrivateCloud.CDK.Constructs.Docker.Containers
                 Essential = true,
                 MemoryLimitMiB = 2048,
                 Cpu = 1024,
+                Environment = new Dictionary<string, string>
+                {
+                    { "TEAMCITY_CONTEXT", "/ci" }
+                }
             });
             container.AddPortMappings(new PortMapping
             {

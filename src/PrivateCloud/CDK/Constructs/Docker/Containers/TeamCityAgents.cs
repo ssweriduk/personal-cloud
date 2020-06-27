@@ -34,7 +34,7 @@ namespace PrivateCloud.CDK.Constructs.Docker.Containers
             {
                 Task.AddContainer($"teamcityagent_{i + 1}", new ContainerDefinitionOptions
                 {
-                    Image = ContainerImage.FromRegistry("jetbrains/teamcity-agent:latest"),
+                    Image = ContainerImage.FromRegistry("jetbrains/teamcity-agent:2020.1.1-linux-sudo"),
                     Logging = LogDriver.AwsLogs(new AwsLogDriverProps
                     {
                         LogGroup = logGroup,
@@ -44,8 +44,10 @@ namespace PrivateCloud.CDK.Constructs.Docker.Containers
                     Essential = i == 0,
                     Environment = new Dictionary<string, string>
                     {
-                        {  "SERVER_URL", props.ServerUrl }
+                        { "SERVER_URL", props.ServerUrl },
+                        { "DOCKER_IN_DOCKER", "start" }
                     },
+                    Privileged = true,
                 });
             }
         }
