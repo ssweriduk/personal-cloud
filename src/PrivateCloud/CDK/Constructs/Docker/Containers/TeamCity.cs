@@ -30,7 +30,7 @@ namespace PrivateCloud.CDK.Constructs.Docker.Containers
 
             var container = Task.AddContainer("teamcity", new ContainerDefinitionOptions
             {
-                Image = ContainerImage.FromRegistry("jetbrains/teamcity-server:latest"),
+                Image = ContainerImage.FromRegistry("jetbrains/teamcity-server:2020.1.1-linux"),
                 Logging = LogDriver.AwsLogs(new AwsLogDriverProps
                 {
                     LogGroup = logGroup,
@@ -39,6 +39,10 @@ namespace PrivateCloud.CDK.Constructs.Docker.Containers
                 Essential = true,
                 MemoryLimitMiB = 2048,
                 Cpu = 1024,
+                Environment = new Dictionary<string, string>
+                {
+                    { "TEAMCITY_CONTEXT", "/ci" }
+                }
             });
             container.AddPortMappings(new PortMapping
             {
@@ -56,6 +60,11 @@ namespace PrivateCloud.CDK.Constructs.Docker.Containers
                 ContainerPath = "/opt/teamcity/logs",
                 SourceVolume = "teamcity-logs"
             });
+            container.AddMountPoints(new MountPoint
+            {
+                ContainerPath = "/opt/teamcity/conf/server.xml",
+                SourceVolume = "teamcity-conf"
+            });
 
             Task.AddVolume(new Volume
             {
@@ -71,6 +80,14 @@ namespace PrivateCloud.CDK.Constructs.Docker.Containers
                 Host = new Host
                 {
                     SourcePath = "/mnt/efs/teamcity/logs"
+                }
+            });
+            Task.AddVolume(new Volume
+            {
+                Name = "teamcity-conf",
+                Host = new Host
+                {
+                    SourcePath = "/mnt/efs/teamcity/conf/server.xml"
                 }
             });
         }
