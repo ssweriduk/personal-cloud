@@ -7,11 +7,11 @@ using Amazon.CDK.AWS.ECS;
 using Amazon.CDK.AWS.EFS;
 using Amazon.CDK.AWS.Logs;
 using Amazon.CDK.AWS.ServiceDiscovery;
-using PrivateCloud.CDK.Constructs.Docker.Containers;
+using PrivateCloud.CDK.Constructs.ECS.Containers;
 
-namespace PrivateCloud.CDK.Constructs.Vpn
+namespace PrivateCloud.CDK.Constructs.ECS.Services
 {
-    public class PrivateRoutingStackProps
+    public class PrivateRoutingServiceStackProps
     {
         public IRepository RouterRepository { get; set; }
         public string Tag { get; set; }
@@ -19,9 +19,9 @@ namespace PrivateCloud.CDK.Constructs.Vpn
         public INamespace PrivateDnsNamespace { get; set; }
     }
 
-    public class PrivateRouting : Construct
+    public class PrivateRoutingService : Construct
     {
-        public PrivateRouting(Construct scope, string id, PrivateRoutingStackProps props) : base(scope, id)
+        public PrivateRoutingService(Construct scope, string id, PrivateRoutingServiceStackProps props) : base(scope, id)
         {
             var routing = new Routing(this, "Routing", new RoutingProps
             {

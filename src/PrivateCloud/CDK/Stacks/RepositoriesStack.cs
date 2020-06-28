@@ -27,7 +27,5 @@ namespace PrivateCloud.CDK.Stacks
                 StringValue = props.NginxRouterLatestTag ?? "Initial Deploy",
             });
         }
-
-        
     }
 }

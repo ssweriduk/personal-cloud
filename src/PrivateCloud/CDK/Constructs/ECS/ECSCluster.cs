@@ -5,7 +5,7 @@ using Amazon.CDK.AWS.ECS;
 using Amazon.CDK.AWS.EFS;
 using FileSystem = Amazon.CDK.AWS.EFS.FileSystem;
 
-namespace PrivateCloud.CDK.Constructs.Docker
+namespace PrivateCloud.CDK.Constructs.ECS
 {
     public class ECSClusterProps
     {
@@ -24,7 +24,6 @@ namespace PrivateCloud.CDK.Constructs.Docker
                 ClusterName = "MainECSCluster",
             });
 
-
             var asg = Cluster.AddCapacity("EC2 Instances", new AddCapacityOptions
             {
                 InstanceType = InstanceType.Of(InstanceClass.BURSTABLE3, InstanceSize.MEDIUM),
@@ -35,8 +34,8 @@ namespace PrivateCloud.CDK.Constructs.Docker
             });
             asg.Connections.AllowFromAnyIpv4(Port.Tcp(80));
             asg.Connections.AllowFromAnyIpv4(Port.Tcp(443));
-            asg.Connections.AllowFromAnyIpv4(Port.Tcp(8111));
             asg.Connections.AllowFromAnyIpv4(Port.Tcp(22));
+            asg.Connections.AllowFrom(asg, Port.Tcp(8111));
 
             var efs = new FileSystem(this, "Shared ECS File System", new FileSystemProps
             {

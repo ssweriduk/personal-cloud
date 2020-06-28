@@ -5,7 +5,7 @@ using Amazon.CDK.AWS.ECS;
 using Amazon.CDK.AWS.IAM;
 using Amazon.CDK.AWS.Logs;
 
-namespace PrivateCloud.CDK.Constructs.Docker.Containers
+namespace PrivateCloud.CDK.Constructs.ECS.Containers
 {
     public class TeamCityAgentsProps
     {
