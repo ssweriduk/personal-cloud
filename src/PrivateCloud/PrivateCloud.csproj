@@ -38,9 +38,11 @@
     <Folder Include="CDK\" />
     <Folder Include="CDK\Constructs\" />
     <Folder Include="CDK\Stacks\" />
-    <Folder Include="CDK\Constructs\Vpn\" />
-    <Folder Include="CDK\Constructs\Docker\" />
-    <Folder Include="CDK\Constructs\Docker\Containers\" />
+    <Folder Include="CDK\Constructs\Networking\" />
+    <Folder Include="CDK\Constructs\ECS\" />
+    <Folder Include="CDK\Constructs\ECS\Containers\" />
     <Folder Include="CDK\Constructs\Roles\" />
+    <Folder Include="CDK\Constructs\ECS\Services\" />
+    <Folder Include="CDK\Stacks\PrivateCloud\" />
   </ItemGroup>
 </Project>

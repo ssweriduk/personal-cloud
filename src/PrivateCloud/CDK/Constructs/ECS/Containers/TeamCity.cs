@@ -6,7 +6,7 @@ using Amazon.CDK.AWS.Logs;
 using Amazon.CDK.AWS.EFS;
 using System.Collections.Generic;
 
-namespace PrivateCloud.CDK.Constructs.Docker.Containers
+namespace PrivateCloud.CDK.Constructs.ECS.Containers
 {
     public class TeamCityProps { }
 

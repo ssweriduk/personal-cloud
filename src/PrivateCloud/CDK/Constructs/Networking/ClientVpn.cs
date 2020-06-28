@@ -5,18 +5,18 @@ using Amazon.CDK.AWS.Logs;
 using Amazon.CDK.AWS.SSM;
 using static Amazon.CDK.AWS.EC2.CfnClientVpnEndpoint;
 
-namespace PrivateCloud.CDK.Constructs.Vpn
+namespace PrivateCloud.CDK.Constructs.Networking
 {
-    public class VpnStackProps
+    public class ClientVpnProps
     {
         public string ServerCertificateArn { get; set; }
         public string ClientCidrBlock { get; set; }
         public string EndpointIdSSMKey { get; set; }
     }
 
-    public class VpnStack : Construct
+    public class ClientVpn : Construct
     {
-        public VpnStack(Construct scope, string id, VpnStackProps props) : base(scope, id)
+        public ClientVpn(Construct scope, string id, ClientVpnProps props) : base(scope, id)
         {
 
             // Client VPN Endpoint

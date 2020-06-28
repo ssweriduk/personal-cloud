@@ -1,10 +1,6 @@
-﻿using System;
-using Amazon.CDK;
-using PrivateCloud.CDK.Constructs.Docker;
-using PrivateCloud.CDK.Constructs.Vpn;
+﻿using Amazon.CDK;
+using PrivateCloud.CDK.Constructs.Networking;
 
-using CDKEnvironment = Amazon.CDK.Environment;
-using Environment = System.Environment;
 
 namespace PrivateCloud.CDK.Stacks
 {
@@ -18,22 +14,18 @@ namespace PrivateCloud.CDK.Stacks
     {
         public PrivateCloudStack(Construct scope, string id, PrivateCloudStackProps props) : base(scope, id, props)
         {
-            var vpnStackProps = new VpnStackProps
+            var vpnStackProps = new ClientVpnProps
             {
                 ServerCertificateArn = props.ServerCertificateArn,
                 ClientCidrBlock = "172.17.0.0/22",
                 EndpointIdSSMKey = "/Vpn/Server/EndpointId"
             };
-            _ = new VpnStack(this, "VpnStack", vpnStackProps);
-            var vpcStack = new VpcStack(this, "VpcStack", new VpcStackProps
-            {
-                PrivateSubnetIdsSSMKey = "/Vpc/MainVpc/Subnets/Private"
-            });
+            _ = new ClientVpn(this, "VpnStack", vpnStackProps);
+            var vpcStack = new MainVpc(this, "VpcStack");
 
-
-            new PrivateECSStack(this, "PrivateECSStack", new PrivateECSStackProps
+            new EcsStack(this, "PrivateECSStack", new EcsStackProps
             {
-                MainVpc = vpcStack.MainVpc,
+                MainVpc = vpcStack.Vpc,
                 NginxRouterRepositoryName = StackInfo.NginxRouterRepositoryName,
                 NginxRouterTag = props.NginxRouterTag
             });

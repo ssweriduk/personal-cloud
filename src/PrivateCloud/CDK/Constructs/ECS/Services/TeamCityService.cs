@@ -3,9 +3,9 @@ using Amazon.CDK;
 using Amazon.CDK.AWS.EC2;
 using Amazon.CDK.AWS.ECS;
 using Amazon.CDK.AWS.ServiceDiscovery;
-using PrivateCloud.CDK.Constructs.Docker.Containers;
+using PrivateCloud.CDK.Constructs.ECS.Containers;
 
-namespace PrivateCloud.CDK.Constructs.Vpn
+namespace PrivateCloud.CDK.Constructs.ECS.Services
 {
     public class TeamCityServiceProps
     {
