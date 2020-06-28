@@ -41,5 +41,6 @@
     <Folder Include="CDK\Constructs\Vpn\" />
     <Folder Include="CDK\Constructs\Docker\" />
     <Folder Include="CDK\Constructs\Docker\Containers\" />
+    <Folder Include="CDK\Constructs\Roles\" />
   </ItemGroup>
 </Project>

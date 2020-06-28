@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Amazon.CDK;
 using Amazon.CDK.AWS.ECS;
+using Amazon.CDK.AWS.IAM;
 using Amazon.CDK.AWS.Logs;
 
 namespace PrivateCloud.CDK.Constructs.Docker.Containers
@@ -21,6 +22,7 @@ namespace PrivateCloud.CDK.Constructs.Docker.Containers
             Task = new Ec2TaskDefinition(this, "TeamCity Agent Task", new Ec2TaskDefinitionProps
             {
                 NetworkMode = NetworkMode.BRIDGE,
+                TaskRole = Role.FromRoleArn(this, "TeamCityAgentRole", "arn:aws:iam::261668588222:role/TeamCityAgentRole")
             });
 
             var logGroup = new LogGroup(this, "TeamCity Agent Log Group", new LogGroupProps
