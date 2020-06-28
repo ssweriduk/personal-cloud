@@ -60,6 +60,11 @@ namespace PrivateCloud.CDK.Constructs.Docker.Containers
                 ContainerPath = "/opt/teamcity/logs",
                 SourceVolume = "teamcity-logs"
             });
+            container.AddMountPoints(new MountPoint
+            {
+                ContainerPath = "/opt/teamcity/conf/server.xml",
+                SourceVolume = "teamcity-conf"
+            });
 
             Task.AddVolume(new Volume
             {
@@ -75,6 +80,14 @@ namespace PrivateCloud.CDK.Constructs.Docker.Containers
                 Host = new Host
                 {
                     SourcePath = "/mnt/efs/teamcity/logs"
+                }
+            });
+            Task.AddVolume(new Volume
+            {
+                Name = "teamcity-conf",
+                Host = new Host
+                {
+                    SourcePath = "/mnt/efs/teamcity/conf/server.xml"
                 }
             });
         }
