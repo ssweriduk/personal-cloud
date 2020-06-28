@@ -36,7 +36,7 @@ namespace PrivateCloud.CDK.Stacks
             _ = new TeamCityAgentsService(this, "TeamCityAgents", new TeamCityAgentsServiceProps
             {
                 Cluster = props.Cluster,
-                ServerUrl = $"http://{teamCity.Service.CloudMapService.ServiceName}.{privateDnsNamespace.NamespaceName}:8111"
+                ServerUrl = $"http://{teamCity.Service.CloudMapService.ServiceName}.{privateDnsNamespace.NamespaceName}:8111/ci/"
             });
 
             _ = new PrivateRouting(this, "PrivateRouting", new PrivateRoutingStackProps

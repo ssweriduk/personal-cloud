@@ -27,7 +27,8 @@ namespace PrivateCloud
             PrivateCloud,
             DockerRepositories,
             ClientVpnCertificates,
-            ClientVpnBlacklist
+            ClientVpnBlacklist,
+            Roles
         }
 
         public static async Task SynthesizeDockerRepositoriesStack(IServiceProvider serviceProvider)
@@ -101,6 +102,14 @@ namespace PrivateCloud
             }
         }
 
+        private static void DeployPrivateCloudRoles()
+        {
+            Console.WriteLine("DEPLOYING PRIVATE CLOUD ROLES");
+            var app = new App();
+            new RolesStack(app, "RolesStack");
+            app.Synth();
+        }
+
         public static void Main(string[] args)
         {
             var app = new CommandLineApplication();
@@ -148,6 +157,9 @@ namespace PrivateCloud
 
                     case DeploymentType.ClientVpnCertificates:
                         await DeployClientVpnClientCertificates(serviceProvider);
+                        return;
+                    case DeploymentType.Roles:
+                        DeployPrivateCloudRoles();
                         return;
                 }
 
