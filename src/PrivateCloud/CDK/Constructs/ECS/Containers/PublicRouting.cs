@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using Amazon.CDK;
 using Amazon.CDK.AWS.ECR;
 using Amazon.CDK.AWS.ECS;
@@ -7,32 +6,32 @@ using Amazon.CDK.AWS.Logs;
 
 namespace PrivateCloud.CDK.Constructs.ECS.Containers
 {
-    public class RoutingProps
+    public class PublicRoutingProps
     {
         public IRepository Repository { get; set; }
         public string Tag { get; set; }
     }
 
-    public class Routing : Construct
+    public class PublicRouting : Construct
     {
-        public TaskDefinition Task { get; set; }
+        public TaskDefinition Task { get; }
 
-        public Routing(Construct scope, string id, RoutingProps props) : base(scope, id)
+        public PublicRouting(Construct scope, string id, PublicRoutingProps props) : base(scope, id)
         {
-            Task = new FargateTaskDefinition(this, "Private Routing Task", new FargateTaskDefinitionProps
+            Task = new FargateTaskDefinition(this, "Public Nginx Router", new FargateTaskDefinitionProps
             {
                 Cpu = 256,
                 MemoryLimitMiB = 512,
             });
 
-            var logGroup = new LogGroup(this, "Private NGINX Router Log Group", new LogGroupProps
+            var logGroup = new LogGroup(this, "Public NGINX Router Log Group", new LogGroupProps
             {
-                LogGroupName = "/privatecloud/nginx",
+                LogGroupName = "/publiccloud/nginx",
                 RemovalPolicy = RemovalPolicy.DESTROY,
                 Retention = RetentionDays.ONE_WEEK,
             });
 
-            var container = Task.AddContainer("router", new ContainerDefinitionOptions
+            var container = Task.AddContainer("publicrouter", new ContainerDefinitionOptions
             {
                 Image = ContainerImage.FromEcrRepository(props.Repository, props.Tag),
                 Logging = LogDriver.AwsLogs(new AwsLogDriverProps
@@ -40,7 +39,7 @@ namespace PrivateCloud.CDK.Constructs.ECS.Containers
                     LogGroup = logGroup,
                     StreamPrefix = "nginxcontainer"
                 }),
-                Essential = true,
+                Essential = true
             });
             container.AddPortMappings(new PortMapping
             {

@@ -15,8 +15,8 @@ namespace PrivateCloud.CDK.Constructs.ECS.Services
     {
         public IRepository RouterRepository { get; set; }
         public string Tag { get; set; }
-        public Cluster Cluster { get; set; }
         public INamespace PrivateDnsNamespace { get; set; }
+        public Cluster Cluster { get; set; }
     }
 
     public class PrivateRoutingService : Construct
@@ -29,7 +29,7 @@ namespace PrivateCloud.CDK.Constructs.ECS.Services
                 Repository = props.RouterRepository,
             });
 
-            var routerService = new Ec2Service(this, "Private Cloud Service", new Ec2ServiceProps
+            var routerService = new FargateService(this, "Private Cloud Service", new FargateServiceProps
             {
                 Cluster = props.Cluster,
                 AssignPublicIp = false,

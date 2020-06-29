@@ -3,6 +3,7 @@ using Amazon.CDK;
 using Amazon.CDK.AWS.EC2;
 using Amazon.CDK.AWS.ECS;
 using Amazon.CDK.AWS.EFS;
+using Amazon.CDK.AWS.SSM;
 using FileSystem = Amazon.CDK.AWS.EFS.FileSystem;
 
 namespace PrivateCloud.CDK.Constructs.ECS
@@ -21,7 +22,7 @@ namespace PrivateCloud.CDK.Constructs.ECS
             Cluster = new Cluster(this, "ECS Cluster", new ClusterProps
             {
                 Vpc = props.MainVpc,
-                ClusterName = "MainECSCluster",
+                ClusterName = "MainCluster"
             });
 
             var asg = Cluster.AddCapacity("EC2 Instances", new AddCapacityOptions
@@ -30,7 +31,7 @@ namespace PrivateCloud.CDK.Constructs.ECS
                 MachineImage = EcsOptimizedImage.AmazonLinux2(AmiHardwareType.STANDARD),
                 DesiredCapacity = 1,
                 MaxCapacity = 2,
-                KeyName = "PrivateEcsCluster",
+                KeyName = "PrivateEcsCluster"
             });
             asg.Connections.AllowFromAnyIpv4(Port.Tcp(80));
             asg.Connections.AllowFromAnyIpv4(Port.Tcp(443));
@@ -58,6 +59,13 @@ namespace PrivateCloud.CDK.Constructs.ECS
                 $"sudo mount -t efs {efs.FileSystemId}:/ /mnt/efs",
                 "sudo chmod go+rw /mnt/efs"
             );
+
+            //new StringParameter(this, "Main ECS Cluster", new StringParameterProps
+            //{
+            //    ParameterName = "/ECS/Clusters/Main",
+            //    Type = ParameterType.STRING,
+            //    StringValue = Cluster.ClusterArn
+            //});
         }
     }
 }

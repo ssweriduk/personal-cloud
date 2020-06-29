@@ -1,16 +1,16 @@
 ﻿using Amazon.CDK;
 using Amazon.CDK.AWS.EC2;
 using Amazon.CDK.AWS.ECR;
+using Amazon.CDK.AWS.ServiceDiscovery;
 using Amazon.CDK.AWS.SSM;
 using PrivateCloud.CDK.Constructs.ECS;
+using PrivateCloud.CDK.Stacks.PrivateCloud;
 
 namespace PrivateCloud.CDK.Stacks
 {
     public class EcsStackProps : NestedStackProps
     {
         public Vpc MainVpc { get; set; }
-        public string NginxRouterRepositoryName { get; set; }
-        public string NginxRouterTag { get; set; }
     }
 
     public class EcsStack : NestedStack
@@ -22,14 +22,23 @@ namespace PrivateCloud.CDK.Stacks
                 MainVpc = props.MainVpc,
             });
 
-            var nginxRouterRepository = Repository.FromRepositoryName(this, "NginxRouterRepository", props.NginxRouterRepositoryName);
+            var privateDnsNamespace = new PrivateDnsNamespace(this, "Private ECS DNS", new PrivateDnsNamespaceProps
+            {
+                Vpc = props.MainVpc,
+                Name = "sweriduk.com",
+            });
 
-            new EcsServicesStack(this, "PrivateServiceStack", new EcsServicesStackProps
+            new Ec2ServicesStack(this, "PrivateServiceStack", new Ec2ServicesStackProps
             {
                 MainVpc = props.MainVpc,
                 Cluster = eCSCluster.Cluster,
-                NginxRouterRepository = nginxRouterRepository,
-                NginxRouterRepositoryTag = props.NginxRouterTag
+                PrivateDnsNamespace = privateDnsNamespace
+            });
+
+            new FargateServicesStack(this, "FargateServicesStack", new FargateServicesStackProps
+            {
+                Cluster = eCSCluster.Cluster,
+                PrivateDnsNamespace = privateDnsNamespace
             });
 
             new StringParameter(this, "Main ECS Cluster", new StringParameterProps

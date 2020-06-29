@@ -1,6 +1,9 @@
 ﻿using Amazon.CDK;
+using Amazon.CDK.AWS.ECR;
+using Amazon.CDK.AWS.ServiceDiscovery;
+using PrivateCloud.CDK.Constructs.ECS;
 using PrivateCloud.CDK.Constructs.Networking;
-
+using PrivateCloud.CDK.Stacks.PrivateCloud;
 
 namespace PrivateCloud.CDK.Stacks
 {
@@ -8,6 +11,7 @@ namespace PrivateCloud.CDK.Stacks
     {
         public string ServerCertificateArn { get; set; }
         public string NginxRouterTag { get; set; }
+        public string PublicNginxRouterTag { get; set; }
     }
 
     public class PrivateCloudStack : Stack
@@ -26,9 +30,7 @@ namespace PrivateCloud.CDK.Stacks
             new EcsStack(this, "PrivateECSStack", new EcsStackProps
             {
                 MainVpc = vpcStack.Vpc,
-                NginxRouterRepositoryName = StackInfo.NginxRouterRepositoryName,
-                NginxRouterTag = props.NginxRouterTag
-            });
+            });            
         }
     }
 }
