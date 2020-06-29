@@ -37,11 +37,14 @@ namespace PrivateCloud
 
             var ssmUtils = serviceProvider.GetService<ISsmUtils>();
             var nginxRouterLatestTag = await ssmUtils.GetLatestPrivateNginxRouterTag();
+            var publicNginxRouterLatestTag = await ssmUtils.GetLatestPublicNginxRouterTag();
             var app = new App();
             new RepositoriesStack(app, "RepositoriesStack", new RepositoriesStackProps
             {
                 NginxRouterRepositoryName = StackInfo.NginxRouterRepositoryName,
                 NginxRouterLatestTag = nginxRouterLatestTag,
+                PublicNginxRouterRepositoryName = StackInfo.PublicNginxRouterRepositoryName,
+                PublicNginxRouterLatestTag = publicNginxRouterLatestTag
             });
             app.Synth();
         }
@@ -52,7 +55,6 @@ namespace PrivateCloud
             var ssmUtils = serviceProvider.GetService<ISsmUtils>();
             var serverSsmUtils = ssmUtils.GetServerCertificateParameters();
             var serverCertificateArn = await serverSsmUtils.GetCertificateArn();
-            var nginxRouterLatestTag = await ssmUtils.GetLatestPrivateNginxRouterTag();
             var app = new App();
             new PrivateCloudStack(app, "PrivateCloudStack", new PrivateCloudStackProps
             {
@@ -62,7 +64,6 @@ namespace PrivateCloud
                     Region = System.Environment.GetEnvironmentVariable("AWS_REGION"),
                     Account = System.Environment.GetEnvironmentVariable("AWS_ACCOUNT"),
                 },
-                NginxRouterTag = nginxRouterLatestTag,
             });
 
             app.Synth();

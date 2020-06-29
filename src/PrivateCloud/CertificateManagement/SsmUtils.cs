@@ -22,6 +22,7 @@ public interface ISsmUtils
 
     Task<string> GetVPNServerEndpointID();
     Task<string> GetLatestPrivateNginxRouterTag();
+    Task<string> GetLatestPublicNginxRouterTag();
 }
 
 namespace PrivateCloud.CertificateManagement
@@ -42,10 +43,12 @@ namespace PrivateCloud.CertificateManagement
 
         private readonly string DOCKER_REPOSITORIES = "Docker";
         private readonly string NGINX_ROUTER_REPOSITORY = "private-nginx-router";
+        private readonly string PUBLIC_NGINX_ROUTER_REPOSITORY = "public-nginx-router";
         private readonly string LATEST_TAG = "Latest";
 
         private string GetServerEndpointIdPath() => Path.Join(ROOT, SSM_VPN, SSM_VPN_SERVER, SSM_VPN_SERVER_ENDPOINT_ID);
         private string GetNginxRouterLatestTagPath() => Path.Join(ROOT, DOCKER_REPOSITORIES, NGINX_ROUTER_REPOSITORY, LATEST_TAG);
+        private string GetPublicNginxRouterLatestTagPath() => Path.Join(ROOT, DOCKER_REPOSITORIES, PUBLIC_NGINX_ROUTER_REPOSITORY, LATEST_TAG);
 
         private string GetServerCertificateArnPath() => Path.Join(ROOT, SSM_VPN, SSM_VPN_SERVER, SSM_VPN_CERTIFICATE_ARN);
         private string GetServerCertificateKeyPairPath() => Path.Join(ROOT, SSM_VPN, SSM_VPN_SERVER, SSM_VPN_KEY_PAIR);
@@ -241,5 +244,7 @@ namespace PrivateCloud.CertificateManagement
         public async Task<string> GetVPNServerEndpointID() => await GetSsmParameterValue(GetServerEndpointIdPath());
 
         public async Task<string> GetLatestPrivateNginxRouterTag() => await GetSsmParameterValue(GetNginxRouterLatestTagPath());
+
+        public async Task<string> GetLatestPublicNginxRouterTag() => await GetSsmParameterValue(GetPublicNginxRouterLatestTagPath());
     }
 }

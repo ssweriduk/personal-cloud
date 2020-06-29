@@ -9,6 +9,8 @@ namespace PrivateCloud.CDK.Stacks
     {
         public string NginxRouterRepositoryName { get; set; }
         public string NginxRouterLatestTag { get; set; }
+        public string PublicNginxRouterRepositoryName { get; set; }
+        public string PublicNginxRouterLatestTag { get; set; }
     }
 
     public class RepositoriesStack : Stack
@@ -20,11 +22,9 @@ namespace PrivateCloud.CDK.Stacks
                 RepositoryName = props.NginxRouterRepositoryName
             });
 
-            new StringParameter(this, "Private NGINX Router Latest Tag", new StringParameterProps
+            new Repository(this, "Public NGINX Router Repo", new RepositoryProps
             {
-                ParameterName = "/Docker/private-nginx-router/Latest",
-                Type = ParameterType.STRING,
-                StringValue = props.NginxRouterLatestTag ?? "Initial Deploy",
+                RepositoryName = props.PublicNginxRouterRepositoryName
             });
         }
     }
